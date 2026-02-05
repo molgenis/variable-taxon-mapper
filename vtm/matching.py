@@ -29,35 +29,12 @@ _PROMPT_DEBUG_SHOWN = False
 logger = logging.getLogger(__name__)
 
 
-def _normalize_confidence(value: Any) -> Optional[float]:
-    """Coerce a confidence-like value into ``[0, 1]`` if possible."""
-
-    try:
-        score = float(value)
-    except (TypeError, ValueError):
-        return None
-
-    if np.isnan(score) or np.isinf(score):  # type: ignore[arg-type]
-        return None
-
-    return max(0.0, min(1.0, score))
-
-
 def _similarity_to_score(similarity: Optional[float]) -> Optional[float]:
     """Map cosine similarity ``[-1, 1]`` to a unit interval confidence score."""
 
     if similarity is None:
         return None
     return max(0.0, min(1.0, 0.5 * (similarity + 1.0)))
-
-
-def _combine_confidence(*parts: Optional[float]) -> Optional[float]:
-    """Aggregate available confidence components via a simple mean."""
-
-    numeric_parts = [part for part in parts if part is not None]
-    if not numeric_parts:
-        return None
-    return float(np.mean(numeric_parts))
 
 
 def _format_prompt(messages: Sequence[ChatCompletionMessageParam]) -> str:
@@ -187,9 +164,7 @@ def _build_match_result(
     match_strategy: str,
     matched: bool,
     no_match: bool,
-    llm_score: Optional[float],
     embedding_similarity: Optional[float],
-    confidence_score: Optional[float],
 ) -> Dict[str, Any]:
     """Construct a standard match result payload."""
 
@@ -201,10 +176,8 @@ def _build_match_result(
         "no_match": no_match,
         "match_strategy": match_strategy,
         "raw": raw,
-        "llm_score": llm_score,
         "embedding_similarity": embedding_similarity,
         "embedding_score": _similarity_to_score(embedding_similarity),
-        "confidence_score": confidence_score,
     }
 
 
@@ -349,7 +322,6 @@ async def match_items_to_tree(
                 f"LLM response for slot {req.slot_id} is not a JSON object: {payload!r}"
             )
 
-        llm_score = _normalize_confidence(payload.get("confidence"))
         labels_raw = payload.get("concept_labels")
         if labels_raw is None:
             labels_raw = payload.get("concept_label")
@@ -472,9 +444,6 @@ async def match_items_to_tree(
                 if len(set(match_strategies)) == 1
                 else "llm_multi"
             )
-            confidence_score = _combine_confidence(
-                llm_score, _similarity_to_score(embedding_similarity)
-            )
             results.append(
                 _build_match_result(
                     req,
@@ -484,9 +453,7 @@ async def match_items_to_tree(
                     match_strategy=match_strategy,
                     matched=True,
                     no_match=False,
-                    llm_score=llm_score,
                     embedding_similarity=embedding_similarity,
-                    confidence_score=confidence_score,
                 )
             )
         else:
@@ -499,9 +466,7 @@ async def match_items_to_tree(
                     match_strategy="no_match",
                     matched=False,
                     no_match=True,
-                    llm_score=llm_score,
                     embedding_similarity=None,
-                    confidence_score=_combine_confidence(llm_score),
                 )
             )
 

@@ -26,9 +26,8 @@ MATCH_RESPONSE_SCHEMA: Dict[str, Any] = {
             "items": {"type": "string"},
             "minItems": 1,
         },
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     },
-    "required": ["concept_labels", "confidence"],
+    "required": ["concept_labels"],
     "additionalProperties": False,
 }
 

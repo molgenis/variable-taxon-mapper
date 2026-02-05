@@ -180,10 +180,8 @@ def build_result_row(
         "resolved_direct_parent": lookup_direct_parent(graph, primary_keyword),
         "_error": job.metadata.get("_error"),
         "match_strategy": prediction.get("match_strategy"),
-        "llm_score": prediction.get("llm_score"),
         "embedding_similarity": prediction.get("embedding_similarity"),
         "embedding_score": prediction.get("embedding_score"),
-        "confidence_score": prediction.get("confidence_score"),
     }
 
     has_gold_labels = bool(gold_labels_seq)

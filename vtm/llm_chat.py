@@ -25,6 +25,7 @@ MATCH_RESPONSE_SCHEMA: Dict[str, Any] = {
             "type": "array",
             "items": {"type": "string"},
             "minItems": 1,
+            "maxItems": 1,
         },
     },
     "required": ["concept_labels"],

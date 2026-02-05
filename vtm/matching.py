@@ -183,9 +183,7 @@ def _build_match_result(
     *,
     node_label_raw: Optional[str],
     raw: str,
-    resolved_label: Optional[str],
-    name_to_id: Mapping[str, str],
-    name_to_path: Mapping[str, str],
+    resolved_keyword: Optional[str],
     match_strategy: str,
     matched: bool,
     no_match: bool,
@@ -195,12 +193,11 @@ def _build_match_result(
 ) -> Dict[str, Any]:
     """Construct a standard match result payload."""
 
+    resolved_keywords = [resolved_keyword] if resolved_keyword else []
     return {
         "input_item": req.item,
         "pred_label_raw": node_label_raw,
-        "resolved_label": resolved_label,
-        "resolved_id": name_to_id.get(resolved_label) if resolved_label else None,
-        "resolved_path": name_to_path.get(resolved_label) if resolved_label else None,
+        "resolved_keywords": resolved_keywords,
         "matched": matched,
         "no_match": no_match,
         "match_strategy": match_strategy,
@@ -388,9 +385,7 @@ async def match_items_to_tree(
                     req,
                     node_label_raw=node_label_raw,
                     raw=raw,
-                    resolved_label=snapped_label,
-                    name_to_id=name_to_id,
-                    name_to_path=name_to_path,
+                    resolved_keyword=snapped_label,
                     match_strategy=match_strategy,
                     matched=True,
                     no_match=False,
@@ -449,19 +444,19 @@ async def match_items_to_tree(
                         best_idx is not None
                         and best_similarity >= embedding_remap_threshold
                     ):
-                        resolved_label = allowed_idx_map[best_idx]
+                        candidate_label = allowed_idx_map[best_idx]
                         snapped_label = maybe_snap_to_child(
-                        resolved_label,
-                        item_text=item_text,
-                        allowed_children=req.allowed_children,
-                        llm_config=postprocessing,
-                        embedder=embedder,
-                        encode_lock=encode_guard,
-                    )
+                            candidate_label,
+                            item_text=item_text,
+                            allowed_children=req.allowed_children,
+                            llm_config=postprocessing,
+                            embedder=embedder,
+                            encode_lock=encode_guard,
+                        )
                         snapped = bool(
                             snapped_label
-                            and resolved_label
-                            and snapped_label != resolved_label
+                            and candidate_label
+                            and snapped_label != candidate_label
                         )
                         match_strategy = (
                             "embedding_remap_and_snapped"
@@ -481,9 +476,7 @@ async def match_items_to_tree(
                                 req,
                                 node_label_raw=node_label_raw,
                                 raw=raw,
-                                resolved_label=snapped_label,
-                                name_to_id=name_to_id,
-                                name_to_path=name_to_path,
+                                resolved_keyword=snapped_label,
                                 match_strategy=match_strategy,
                                 matched=True,
                                 no_match=False,
@@ -499,9 +492,7 @@ async def match_items_to_tree(
                 req,
                 node_label_raw=node_label_raw,
                 raw=raw,
-                resolved_label=None,
-                name_to_id=name_to_id,
-                name_to_path=name_to_path,
+                resolved_keyword=None,
                 match_strategy="no_match",
                 matched=False,
                 no_match=True,

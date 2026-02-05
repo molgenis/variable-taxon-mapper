@@ -206,12 +206,16 @@ num_threads     = 0
 #
 #   progress_log_interval
 #     Log progress every N variables.
+#
+#   output_column_prefix
+#     Optional prefix applied to generated output columns (for example "vtm_").
 # =============================================================================
 [evaluation]
 n                     = 10_000
 seed                  = 37
 dedupe_on             = ["name"]
 progress_log_interval = 10
+output_column_prefix  = ""
 
 # =============================================================================
 # Pruning and anchor selection

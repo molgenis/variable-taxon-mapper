@@ -93,9 +93,9 @@ def format_metrics(
     if hierarchy_table:
         sections.extend(["### Hierarchical distance metrics", hierarchy_table, ""])
 
-    dataset_table = _build_dataset_section(df, dataset_column=dataset_column)
-    if dataset_table:
-        sections.extend(["### Performance by dataset", dataset_table, ""])
+    # dataset_table = _build_dataset_section(df, dataset_column=dataset_column)
+    # if dataset_table:
+    #     sections.extend(["### Performance by dataset", dataset_table, ""])
 
     # additional_table = _build_additional_metrics_section(metrics, consumed)
     # if additional_table:

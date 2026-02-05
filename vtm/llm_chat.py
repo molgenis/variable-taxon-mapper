@@ -21,10 +21,14 @@ logger = logging.getLogger(__name__)
 MATCH_RESPONSE_SCHEMA: Dict[str, Any] = {
     "type": "object",
     "properties": {
-        "concept_label": {"type": "string"},
+        "concept_labels": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1,
+        },
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     },
-    "required": ["concept_label", "confidence"],
+    "required": ["concept_labels", "confidence"],
     "additionalProperties": False,
 }
 
@@ -301,4 +305,3 @@ def llama_completion(
     if message is None or message.content is None:
         raise RuntimeError("Chat completion response missing message content")
     return message.content
-
